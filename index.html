@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="blossom">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✿ SortBloom — Sorting Visualiser</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        /* ═══ THEMES ═══════════════════════════════════════════════ */
+        :root[data-theme="blossom"] {
+            --bg: #fdf6f9;
+            --bg2: #fdeef5;
+            --surface: #ffffff;
+            --surface2: #fce8f3;
+            --border: #f0c6de;
+            --border2: #e8a8ce;
+            --text: #3d1f35;
+            --muted: #9b6b8a;
+            --faint: #c4a0b8;
+            --accent: #e0529a;
+            --accent2: #c4376e;
+            --accent-fg: #ffffff;
+            --pill-bg: #fce8f3;
+            --petal1: #ffb3d1;
+            --petal2: #ffd6e8;
+            --petal3: #ffe0f0;
+            --glow: rgba(224, 82, 154, 0.18);
+            --shadow: rgba(180, 60, 120, 0.12);
+        }
+
+        :root[data-theme="midnight"] {
+            --bg: #120d1a;
+            --bg2: #1a1025;
+            --surface: #211630;
+            --surface2: #2e1f42;
+            --border: #4a2d6a;
+            --border2: #6b3f96;
+            --text: #f0e6ff;
+            --muted: #b08ed0;
+            --faint: #7a5a9a;
+            --accent: #c966ff;
+            --accent2: #a040e0;
+            --accent-fg: #ffffff;
+            --pill-bg: #2e1f42;
+            --petal1: #9b4dca;
+            --petal2: #c966ff;
+            --petal3: #e0aaff;
+            --glow: rgba(180, 80, 255, 0.22);
+            --shadow: rgba(100, 20, 180, 0.25);
+        }
+
+        /* ═══ RESET & BASE ════════════════════════════════════════ */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ═══ DECORATIVE BG PETALS ═══════════════════════════════ */
+        .bg-decor {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .petal-blob {
+            position: absolute;
+            border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%;
+            filter: blur(60px);
+            opacity: 0.35;
+            animation: floatBlob 12s ease-in-out infinite alternate;
+        }
+
+        .petal-blob:nth-child(1) {
+            width: 500px;
+            height: 400px;
+            top: -100px;
+            left: -150px;
+            background: var(--petal1);
+            animation-delay: 0s
+        }
+
+        .petal-blob:nth-child(2) {
+            width: 400px;
+            height: 350px;
+            top: 40%;
+            right: -100px;
+            background: var(--petal2);
+            animation-delay: -4s
+        }
+
+        .petal-blob:nth-child(3) {
+            width: 350px;
+            height: 300px;
+            bottom: -80px;
+            left: 30%;
+            background: var(--petal3);
+            animation-delay: -8s
+        }
+
+        @keyframes floatBlob {
+            0% {
+                transform: scale(1) translate(0, 0)
+            }
+
+            100% {
+                transform: scale(1.15) translate(20px, 30px)
+            }
+        }
+
+        /* ═══ WRAPPER ════════════════════════════════════════════ */
+        .wrap {
+            position: relative;
+            z-index: 1;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem
+        }
+
+        /* ═══ HEADER ════════════════════════════════════════════ */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .logo-icon {
+            font-size: 28px;
+            animation: spinBounce 3s ease-in-out infinite
+        }
+
+        @keyframes spinBounce {
+
+            0%,
+            100% {
+                transform: rotate(-10deg) scale(1)
+            }
+
+            50% {
+                transform: rotate(15deg) scale(1.12)
+            }
+        }
+
+        .logo h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent) 0%, #ff8fc8 60%, var(--accent2) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .logo sub {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 400;
+            -webkit-text-fill-color: var(--muted);
+            letter-spacing: 0.5px;
+            display: block;
+            margin-top: -4px
+        }
+
+        .header-right {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+
+        .theme-btn {
+            padding: 7px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            border: 1.5px solid var(--border2);
+            border-radius: 50px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.25s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theme-btn:hover {
+            background: var(--surface2);
+            border-color: var(--accent);
+            transform: scale(1.03)
+        }
+
+        /* ═══ ALGO PILLS ════════════════════════════════════════ */
+        .section-label {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 1.2px;
+            color: var(--faint);
+            text-transform: uppercase;
+            margin-bottom: 8px
+        }
+
+        .algo-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem
+        }
+
+        .algo-tab {
+            padding: 6px 16px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1.5px solid var(--border);
+            border-radius: 50px;
+            background: var(--surface);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .algo-tab::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, var(--accent), #ff8fc8);
+            opacity: 0;
+            transition: opacity 0.2s;
+            border-radius: inherit;
+        }
+
+        .algo-tab:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-1px)
+        }
+
+        .algo-tab.active {
+            border-color: transparent;
+            color: #fff
+        }
+
+        .algo-tab.active::before {
+            opacity: 1
+        }
+
+        .algo-tab span {
+            position: relative;
+            z-index: 1
+        }
+
+        /* ═══ INPUT PANEL ════════════════════════════════════════ */
+        .input-panel {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 4px 24px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .input-panel::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--petal2);
+            opacity: 0.3;
+            filter: blur(30px);
+            pointer-events: none;
+        }
+
+        .input-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 8px;
+            letter-spacing: 0.3px
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center
+        }
+
+        .custom-input {
+            flex: 1;
+            min-width: 180px;
+            padding: 8px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 50px;
+            background: var(--bg2);
+            color: var(--text);
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .custom-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--glow)
+        }
+
+        .custom-input::placeholder {
+            color: var(--faint)
+        }
+
+        .input-error {
+            font-size: 12px;
+            color: #e05577;
+            margin-top: 6px;
+            min-height: 16px;
+            padding-left: 4px
+        }
+
+        /* ═══ BUTTONS ════════════════════════════════════════════ */
+        .btn {
+            padding: 7px 18px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'DM Sans', sans-serif;
+            letter-spacing: 0.3px;
+            border: 1.5px solid transparent;
+        }
+
+        .btn-ghost {
+            background: var(--surface);
+            color: var(--muted);
+            border-color: var(--border)
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-1px)
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #ff8fc8);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 15px var(--glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--glow)
+        }
+
+        .btn-primary:active {
+            transform: translateY(0)
+        }
+
+        .btn:disabled {
+            opacity: 0.38;
+            cursor: not-allowed;
+            transform: none !important
+        }
+
+        select {
+            padding: 7px 14px;
+            font-size: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+            border: 1.5px solid var(--border);
+            border-radius: 50px;
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            outline: none;
+        }
+
+        select:hover {
+            border-color: var(--accent)
+        }
+
+        /* ═══ CONTROLS ROW ════════════════════════════════════════ */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 1rem
+        }
+
+        .speed-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 50px;
+            padding: 4px 14px;
+        }
+
+        .speed-label {
+            font-size: 11px;
+            color: var(--faint);
+            letter-spacing: 0.5px
+        }
+
+        input[type=range] {
+            width: 80px;
+            height: 4px;
+            accent-color: var(--accent);
+            cursor: pointer;
+        }
+
+        .speed-val {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 28px
+        }
+
+        /* ═══ LEGEND ════════════════════════════════════════════ */
+        .legend {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            font-size: 11.5px;
+            color: var(--muted);
+            margin-bottom: 1rem;
+            align-items: center
+        }
+
+        .leg {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 400
+        }
+
+        .leg-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            flex-shrink: 0
+        }
+
+        /* ═══ STAGE / ARRAY ═════════════════════════════════════ */
+        .stage {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 24px;
+            padding: 20px 20px 0;
+            margin-bottom: 1rem;
+            box-shadow: 0 8px 40px var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stage::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--petal1), var(--accent), #ff8fc8, var(--petal2));
+            border-radius: 0 0 24px 24px;
+        }
+
+        .array-wrap {
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 220px;
+            padding: 0 4px 16px;
+        }
+
+        .bar {
+            flex: 1;
+            min-width: 4px;
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: height 0.14s cubic-bezier(0.34, 1.56, 0.64, 1);
+            background: linear-gradient(180deg, var(--petal1), var(--petal2));
+            box-shadow: 0 2px 8px rgba(200, 80, 150, 0.15);
+        }
+
+        .bar.comparing {
+            background: linear-gradient(180deg, #ffe082, #ffb300);
+            box-shadow: 0 3px 12px rgba(255, 160, 0, 0.4);
+            transform: scaleX(1.08);
+        }
+
+        .bar.swapping {
+            background: linear-gradient(180deg, #ff8a9b, #e0375a);
+            box-shadow: 0 3px 14px rgba(224, 55, 90, 0.45);
+            animation: swapPulse 0.3s ease;
+        }
+
+        .bar.sorted {
+            background: linear-gradient(180deg, #80e8b4, #1daa6a);
+            box-shadow: 0 2px 10px rgba(29, 170, 106, 0.3);
+        }
+
+        .bar.pivot {
+            background: linear-gradient(180deg, #f8a0d0, #d4376e);
+            box-shadow: 0 3px 14px rgba(212, 55, 110, 0.45);
+        }
+
+        .bar.merging {
+            background: linear-gradient(180deg, #c9a0f8, #8b40e0);
+            box-shadow: 0 3px 12px rgba(139, 64, 224, 0.4);
+        }
+
+        @keyframes swapPulse {
+            0% {
+                transform: scaleX(1)
+            }
+
+            50% {
+                transform: scaleX(1.15)
+            }
+
+            100% {
+                transform: scaleX(1)
+            }
+        }
+
+        /* ═══ STEP INFO ══════════════════════════════════════════ */
+        .step-card {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            padding: 10px 16px;
+            margin-bottom: 1rem;
+            font-size: 13px;
+            color: var(--muted);
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 2px 12px var(--shadow);
+        }
+
+        .step-icon {
+            font-size: 16px;
+            flex-shrink: 0
+        }
+
+        /* ═══ CHIPS / STATS ══════════════════════════════════════ */
+        .stats-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem
+        }
+
+        .stat-chip {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 8px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            box-shadow: 0 2px 10px var(--shadow);
+            min-width: 90px;
+        }
+
+        .stat-chip .s-label {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.8px;
+            color: var(--faint);
+            text-transform: uppercase;
+            margin-bottom: 2px
+        }
+
+        .stat-chip .s-val {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: 'Playfair Display', serif;
+            line-height: 1.1
+        }
+
+        .stat-chip .s-sub {
+            font-size: 10px;
+            color: var(--muted)
+        }
+
+        /* ═══ COMPLEXITY PANEL ════════════════════════════════════ */
+        .complexity-panel {
+            background: var(--surface);
+            border: 1.5px solid var(--border);
+            border-radius: 20px;
+            padding: 18px 20px;
+            box-shadow: 0 4px 24px var(--shadow);
+            margin-top: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .complexity-panel::before {
+            content: '';
+            position: absolute;
+            bottom: -30px;
+            left: -30px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: var(--petal1);
+            opacity: 0.18;
+            filter: blur(35px);
+            pointer-events: none;
+        }
+
+        .cp-header {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            margin-bottom: 14px
+        }
+
+        .cp-header h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text)
+        }
+
+        .cp-header .algo-badge {
+            font-size: 11px;
+            font-weight: 500;
+            padding: 2px 10px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--accent), #ff8fc8);
+            color: #fff;
+            letter-spacing: 0.3px;
+        }
+
+        .complexity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px
+        }
+
+        .c-card {
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .c-card .c-label {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: var(--faint);
+            margin-bottom: 4px
+        }
+
+        .c-card .c-val {
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            color: var(--text);
+            margin-bottom: 8px
+        }
+
+        .c-card .bar-track {
+            height: 5px;
+            background: var(--border);
+            border-radius: 10px
+        }
+
+        .c-card .bar-fill {
+            height: 5px;
+            border-radius: 10px;
+            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)
+        }
+
+        /* ═══ DIVIDER ════════════════════════════════════════════ */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 1.2rem 0
+        }
+
+        /* ═══ SCROLLBAR ══════════════════════════════════════════ */
+        ::-webkit-scrollbar {
+            width: 6px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 10px
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-decor">
+        <div class="petal-blob"></div>
+        <div class="petal-blob"></div>
+        <div class="petal-blob"></div>
+    </div>
+
+    <div class="wrap">
+
+        <!-- HEADER -->
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">✿</div>
+                <div>
+                    <h1>SortBloom</h1>
+                    <sub>Sorting Algorithm Visualiser</sub>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="theme-btn" id="themeBtn">🌙 Midnight</button>
+            </div>
+        </div>
+
+        <!-- ALGO TABS -->
+        <div class="section-label">Choose Algorithm</div>
+        <div class="algo-tabs" id="algoTabs"></div>
+
+        <!-- INPUT PANEL -->
+        <div class="input-panel">
+            <div class="input-label">✦ Custom array — paste comma-separated numbers, or generate a random one</div>
+            <div class="input-row">
+                <input type="text" class="custom-input" id="customInput"
+                    placeholder="e.g. 45, 12, 78, 3, 56, 23, 91, 7">
+                <button class="btn btn-primary" id="applyBtn">✦ Apply</button>
+                <button class="btn btn-ghost" id="genBtn">⟳ Random</button>
+                <select id="sizeSelect">
+                    <option value="12">12 bars</option>
+                    <option value="20" selected>20 bars</option>
+                    <option value="30">30 bars</option>
+                    <option value="48">48 bars</option>
+                </select>
+            </div>
+            <div class="input-error" id="inputError"></div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <button class="btn btn-ghost" id="prevBtn" disabled>← Prev</button>
+            <button class="btn btn-ghost" id="nextBtn">Next →</button>
+            <button class="btn btn-primary" id="playBtn">▶ Play</button>
+            <button class="btn btn-ghost" id="resetBtn">↺ Reset</button>
+            <div class="speed-wrap">
+                <span class="speed-label">Speed</span>
+                <input type="range" id="speedSlider" min="1" max="15" value="6" step="1">
+                <span class="speed-val" id="speedLabel">6×</span>
+            </div>
+        </div>
+
+        <!-- LEGEND -->
+        <div class="legend">
+            <div class="leg">
+                <div class="leg-dot" style="background:linear-gradient(135deg,#ffb3d1,#ff80b0)"></div>unsorted
+            </div>
+            <div class="leg">
+                <div class="leg-dot" style="background:linear-gradient(135deg,#ffe082,#ffb300)"></div>comparing
+            </div>
+            <div class="leg">
+                <div class="leg-dot" style="background:linear-gradient(135deg,#ff8a9b,#e0375a)"></div>swapping
+            </div>
+            <div class="leg">
+                <div class="leg-dot" style="background:linear-gradient(135deg,#f8a0d0,#d4376e)"></div>pivot
+            </div>
+            <div class="leg">
+                <div class="leg-dot" style="background:linear-gradient(135deg,#c9a0f8,#8b40e0)"></div>merging
+            </div>
+            <div class="leg">
+                <div class="leg-dot" style="background:linear-gradient(135deg,#80e8b4,#1daa6a)"></div>sorted
+            </div>
+        </div>
+
+        <!-- ARRAY STAGE -->
+        <div class="stage">
+            <div class="array-wrap" id="arrayWrap"></div>
+        </div>
+
+        <!-- STEP INFO -->
+        <div class="step-card">
+            <span class="step-icon">✿</span>
+            <span id="stepInfo">Pick an algorithm and press Play to watch the magic unfold~</span>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-chip">
+                <div class="s-label">Step</div>
+                <div class="s-val"><span id="stepNum">0</span></div>
+                <div class="s-sub">of <span id="totalSteps">0</span></div>
+            </div>
+            <div class="stat-chip">
+                <div class="s-label">Comparisons</div>
+                <div class="s-val" id="compCount">0</div>
+                <div class="s-sub">checks</div>
+            </div>
+            <div class="stat-chip">
+                <div class="s-label">Swaps</div>
+                <div class="s-val" id="swapCount">0</div>
+                <div class="s-sub">moved</div>
+            </div>
+            <div class="stat-chip">
+                <div class="s-label">Writes</div>
+                <div class="s-val" id="writeCount">0</div>
+                <div class="s-sub">to array</div>
+            </div>
+        </div>
+
+        <!-- COMPLEXITY -->
+        <div class="complexity-panel">
+            <div class="cp-header">
+                <h3>Complexity</h3>
+                <span class="algo-badge" id="algoLabel">Bubble sort</span>
+            </div>
+            <div class="complexity-grid" id="complexityGrid"></div>
+        </div>
+
+    </div><!-- /wrap -->
+
+    <script>
+        const ALGOS = {
+            bubble: {
+                name: "Bubble sort", best: "O(n)", avg: "O(n²)", worst: "O(n²)", space: "O(1)", bestW: 10, avgW: 90, worstW: 90,
+                generate(arr) {
+                    const steps = [], n = arr.length, a = [...arr]; let sorted = false, passes = 0;
+                    while (!sorted) { sorted = true; for (let i = 0; i < n - 1 - passes; i++) { steps.push({ type: "compare", i, j: i + 1, arr: [...a], msg: `Comparing ${a[i]} and ${a[i + 1]} at positions [${i}] and [${i + 1}]` }); if (a[i] > a[i + 1]) { [a[i], a[i + 1]] = [a[i + 1], a[i]]; steps.push({ type: "swap", i, j: i + 1, arr: [...a], msg: `Swapping ${a[i]} ↔ ${a[i + 1]} ✦` }); sorted = false; } } passes++; if (!sorted) steps.push({ type: "pass", arr: [...a], sorted: n - passes, msg: `Pass ${passes} done ✿ Last ${passes} element(s) are in their final spot!` }); }
+                    steps.push({ type: "done", arr: [...a], sorted: n, msg: "✦ All sorted and blooming! ✦" }); return steps;
+                }
+            },
+
+            selection: {
+                name: "Selection sort", best: "O(n²)", avg: "O(n²)", worst: "O(n²)", space: "O(1)", bestW: 90, avgW: 90, worstW: 90,
+                generate(arr) {
+                    const steps = [], n = arr.length, a = [...arr];
+                    for (let i = 0; i < n - 1; i++) {
+                        let min = i; steps.push({ type: "pivot", i, arr: [...a], msg: `Looking for the smallest petal from index ${i}~` });
+                        for (let j = i + 1; j < n; j++) { steps.push({ type: "compare", i: min, j, pivot: i, arr: [...a], msg: `Is ${a[j]} smaller than current min ${a[min]}?` }); if (a[j] < a[min]) min = j; }
+                        if (min !== i) { [a[i], a[min]] = [a[min], a[i]]; steps.push({ type: "swap", i, j: min, arr: [...a], sorted: i, msg: `Placing minimum ${a[i]} at index ${i} ✦` }); }
+                        else steps.push({ type: "noswap", i, arr: [...a], sorted: i, msg: `${a[i]} is already the smallest here ✿` });
+                    }
+                    steps.push({ type: "done", arr: [...a], sorted: n, msg: "✦ All sorted and blooming! ✦" }); return steps;
+                }
+            },
+
+            insertion: {
+                name: "Insertion sort", best: "O(n)", avg: "O(n²)", worst: "O(n²)", space: "O(1)", bestW: 10, avgW: 90, worstW: 90,
+                generate(arr) {
+                    const steps = [], n = arr.length, a = [...arr];
+                    steps.push({ type: "sorted", arr: [...a], sorted: 1, msg: "Index 0 starts sorted ✿" });
+                    for (let i = 1; i < n; i++) {
+                        let key = a[i], j = i - 1; steps.push({ type: "pick", i, arr: [...a], msg: `Picking up ${key} to place in sorted portion~` });
+                        while (j >= 0 && a[j] > key) { steps.push({ type: "compare", i: j, j: i, arr: [...a], msg: `${a[j]} > ${key}, sliding it right` }); a[j + 1] = a[j]; steps.push({ type: "shift", i: j, j: j + 1, arr: [...a], msg: `Sliding ${a[j + 1]} to position ${j + 1}` }); j--; }
+                        a[j + 1] = key; steps.push({ type: "place", i: j + 1, arr: [...a], sorted: i + 1, msg: `Nestling ${key} into position ${j + 1} ✦` });
+                    }
+                    steps.push({ type: "done", arr: [...a], sorted: n, msg: "✦ All sorted and blooming! ✦" }); return steps;
+                }
+            },
+
+            merge: {
+                name: "Merge sort", best: "O(n log n)", avg: "O(n log n)", worst: "O(n log n)", space: "O(n)", bestW: 40, avgW: 40, worstW: 40,
+                generate(arr) {
+                    const steps = [], a = [...arr];
+                    function merge(a, l, m, r) {
+                        const L = a.slice(l, m + 1), R = a.slice(m + 1, r + 1); let i = 0, j = 0, k = l;
+                        steps.push({ type: "merge_start", l, r, arr: [...a], msg: `Weaving [${l}..${m}] and [${m + 1}..${r}] together~` });
+                        while (i < L.length && j < R.length) { steps.push({ type: "compare", i: l + i, j: m + 1 + j, arr: [...a], msg: `Comparing ${L[i]} and ${R[j]}` }); a[k] = (L[i] <= R[j]) ? L[i++] : R[j++]; steps.push({ type: "merging", k, arr: [...a], msg: `Placing ${a[k]} at index ${k}` }); k++; }
+                        while (i < L.length) { a[k] = L[i++]; steps.push({ type: "merging", k, arr: [...a], msg: `Copying left ${a[k]} to index ${k}` }); k++; }
+                        while (j < R.length) { a[k] = R[j++]; steps.push({ type: "merging", k, arr: [...a], msg: `Copying right ${a[k]} to index ${k}` }); k++; }
+                        steps.push({ type: "merged", l, r, arr: [...a], msg: `Subarray [${l}..${r}] perfectly woven ✦` });
+                    }
+                    function ms(a, l, r) { if (l >= r) return; const m = Math.floor((l + r) / 2); steps.push({ type: "divide", l, m, r, arr: [...a], msg: `Splitting [${l}..${r}] at midpoint ${m}~` }); ms(a, l, m); ms(a, m + 1, r); merge(a, l, m, r); }
+                    ms(a, 0, a.length - 1); steps.push({ type: "done", arr: [...a], sorted: a.length, msg: "✦ All sorted and blooming! ✦" }); return steps;
+                }
+            },
+
+            quick: {
+                name: "Quick sort", best: "O(n log n)", avg: "O(n log n)", worst: "O(n²)", space: "O(log n)", bestW: 40, avgW: 40, worstW: 90,
+                generate(arr) {
+                    const steps = [], a = [...arr];
+                    function partition(a, lo, hi) {
+                        const pv = a[hi]; let i = lo - 1; steps.push({ type: "pivot_pick", i: hi, arr: [...a], msg: `Choosing pivot ✿ ${pv} at index ${hi}` });
+                        for (let j = lo; j < hi; j++) { steps.push({ type: "compare", i: j, j: hi, pivot: hi, arr: [...a], msg: `Is ${a[j]} ≤ pivot ${pv}?` }); if (a[j] <= pv) { i++;[a[i], a[j]] = [a[j], a[i]]; steps.push({ type: "swap", i, j, arr: [...a], msg: `Yes! Swapping ${a[j]} ↔ ${a[i]} ✦` }); } }
+                        [a[i + 1], a[hi]] = [a[hi], a[i + 1]]; steps.push({ type: "place_pivot", i: i + 1, arr: [...a], msg: `Pivot ${a[i + 1]} settled at final home: index ${i + 1} ✦` }); return i + 1;
+                    }
+                    function qs(a, lo, hi) { if (lo >= hi) return; const p = partition(a, lo, hi); steps.push({ type: "partitioned", p, arr: [...a], msg: `Partition done ✿ Pivot at index ${p} is perfectly placed` }); qs(a, lo, p - 1); qs(a, p + 1, hi); }
+                    qs(a, 0, a.length - 1); steps.push({ type: "done", arr: [...a], sorted: a.length, msg: "✦ All sorted and blooming! ✦" }); return steps;
+                }
+            },
+
+            heap: {
+                name: "Heap sort", best: "O(n log n)", avg: "O(n log n)", worst: "O(n log n)", space: "O(1)", bestW: 40, avgW: 40, worstW: 40,
+                generate(arr) {
+                    const steps = [], n = arr.length, a = [...arr];
+                    function heapify(a, n, i) {
+                        let largest = i, l = 2 * i + 1, r = 2 * i + 2;
+                        if (l < n) { steps.push({ type: "compare", i: largest, j: l, arr: [...a], msg: `Checking left child ${a[l]} vs root ${a[largest]}` }); if (a[l] > a[largest]) largest = l; }
+                        if (r < n) { steps.push({ type: "compare", i: largest, j: r, arr: [...a], msg: `Checking right child ${a[r]} vs largest ${a[largest]}` }); if (a[r] > a[largest]) largest = r; }
+                        if (largest !== i) { [a[i], a[largest]] = [a[largest], a[i]]; steps.push({ type: "swap", i, j: largest, arr: [...a], msg: `Swapping to maintain heap ✦` }); heapify(a, n, largest); }
+                    }
+                    for (let i = Math.floor(n / 2) - 1; i >= 0; i--) { steps.push({ type: "heapify", i, arr: [...a], msg: `Building max-heap at index ${i}~` }); heapify(a, n, i); }
+                    for (let i = n - 1; i > 0; i--) { [a[0], a[i]] = [a[i], a[0]]; steps.push({ type: "swap", i: 0, j: i, arr: [...a], sorted: n - i, msg: `Plucking max ${a[i]} → position ${i} ✦ Heap shrinks to size ${i}` }); heapify(a, i, 0); }
+                    steps.push({ type: "done", arr: [...a], sorted: n, msg: "✦ All sorted and blooming! ✦" }); return steps;
+                }
+            }
+        };
+
+        // ── State ──────────────────────────────────────────────────
+        let currentAlgo = "bubble", arr = [], steps = [], stepIdx = 0, sortedCount = 0, playTimer = null;
+        let comparisons = 0, swaps = 0, writes = 0, isDark = false;
+
+        // ── Theme ──────────────────────────────────────────────────
+        function toggleTheme() {
+            isDark = !isDark;
+            document.documentElement.setAttribute("data-theme", isDark ? "midnight" : "blossom");
+            document.getElementById("themeBtn").textContent = isDark ? "🌸 Blossom" : "🌙 Midnight";
+        }
+
+        // ── Array ──────────────────────────────────────────────────
+        function genArr() {
+            document.getElementById("customInput").value = "";
+            document.getElementById("inputError").textContent = "";
+            const n = parseInt(document.getElementById("sizeSelect").value);
+            arr = Array.from({ length: n }, () => Math.floor(Math.random() * 90) + 10);
+            resetState();
+        }
+
+        function applyCustomArray() {
+            const raw = document.getElementById("customInput").value.trim();
+            const errEl = document.getElementById("inputError");
+            if (!raw) { errEl.textContent = "✿ Please enter some numbers~"; return; }
+            const parsed = raw.split(/[\s,]+/).map(s => Number(s.trim())).filter(s => s !== "");
+            if (parsed.some(isNaN)) { errEl.textContent = "✦ Oops! Use only numbers separated by commas (e.g. 45, 12, 78)"; return; }
+            if (parsed.length < 2) { errEl.textContent = "✿ Please enter at least 2 numbers~"; return; }
+            if (parsed.length > 80) { errEl.textContent = "✦ Max 80 values please!"; return; }
+            if (parsed.some(v => v < 1 || v > 999)) { errEl.textContent = "✿ Values must be between 1 and 999~"; return; }
+            errEl.textContent = ""; arr = parsed; resetState();
+        }
+
+        // ── Reset ──────────────────────────────────────────────────
+        function resetState() {
+            clearInterval(playTimer); playTimer = null;
+            document.getElementById("playBtn").textContent = "▶ Play";
+            steps = ALGOS[currentAlgo].generate([...arr]);
+            stepIdx = 0; sortedCount = 0; comparisons = 0; swaps = 0; writes = 0;
+            document.getElementById("totalSteps").textContent = steps.length;
+            updateCounters();
+            renderBars(arr, [], [], 0);
+            document.getElementById("stepInfo").textContent = "Pick an algorithm and press Play to watch the magic unfold~";
+            document.getElementById("prevBtn").disabled = true;
+            document.getElementById("nextBtn").disabled = steps.length === 0;
+        }
+
+        // ── Render ─────────────────────────────────────────────────
+        function renderBars(a, hi, sw, sorted, pivot, merging) {
+            const wrap = document.getElementById("arrayWrap");
+            const max = Math.max(...a);
+            wrap.innerHTML = a.map((v, i) => {
+                let cls = "bar";
+                if (i < sorted) cls += " sorted";
+                if (merging && merging.includes(i)) cls += " merging";
+                else if (sw && sw.includes(i)) cls += " swapping";
+                else if (hi && hi.includes(i)) cls += " comparing";
+                if (i === pivot) cls += " pivot";
+                const h = Math.round((v / max) * 200) + 12;
+                return `<div class="${cls}" style="height:${h}px" title="${v}"></div>`;
+            }).join("");
+        }
+
+        function applyStep(s) {
+            if (s.sorted !== undefined) sortedCount = s.sorted;
+            let hi = [], sw = [], pivot = -1, merging = [];
+            switch (s.type) {
+                case "compare": case "pick": hi = [s.i, s.j]; comparisons++; break;
+                case "swap": case "place_pivot": sw = [s.i, s.j]; swaps++; break;
+                case "write": case "shift": case "place": writes++; break;
+                case "merging": merging = [s.k]; writes++; break;
+                case "merge_start": for (let x = s.l; x <= s.r; x++)merging.push(x); break;
+            }
+            if (s.pivot !== undefined) pivot = s.pivot;
+            if (s.i !== undefined && ["pivot", "pivot_pick", "heapify"].includes(s.type)) pivot = s.i;
+            renderBars(s.arr, hi, sw, s.sorted !== undefined ? s.sorted : sortedCount, pivot, merging);
+            document.getElementById("stepInfo").textContent = s.msg || "";
+            updateCounters();
+        }
+
+        function updateCounters() {
+            document.getElementById("stepNum").textContent = stepIdx;
+            document.getElementById("compCount").textContent = comparisons;
+            document.getElementById("swapCount").textContent = swaps;
+            document.getElementById("writeCount").textContent = writes;
+        }
+
+        // ── Navigation ─────────────────────────────────────────────
+        function goNext() {
+            if (stepIdx >= steps.length) return;
+            applyStep(steps[stepIdx]); stepIdx++;
+            document.getElementById("prevBtn").disabled = stepIdx <= 1;
+            document.getElementById("nextBtn").disabled = stepIdx >= steps.length;
+        }
+
+        function goPrev() {
+            if (stepIdx <= 1) return;
+            stepIdx = Math.max(0, stepIdx - 2);
+            comparisons = 0; swaps = 0; writes = 0; sortedCount = 0;
+            for (let k = 0; k < stepIdx; k++) {
+                const s = steps[k];
+                if (["compare", "pick"].includes(s.type)) comparisons++;
+                if (["swap", "place_pivot"].includes(s.type)) swaps++;
+                if (["write", "shift", "place", "merging"].includes(s.type)) writes++;
+                if (s.sorted !== undefined) sortedCount = s.sorted;
+            }
+            if (stepIdx > 0) { applyStep(steps[stepIdx]); stepIdx++; }
+            else { renderBars(arr, [], [], 0); document.getElementById("stepInfo").textContent = ""; updateCounters(); }
+            document.getElementById("prevBtn").disabled = stepIdx <= 1;
+            document.getElementById("nextBtn").disabled = stepIdx >= steps.length;
+        }
+
+        function togglePlay() {
+            if (playTimer) { clearInterval(playTimer); playTimer = null; document.getElementById("playBtn").textContent = "▶ Play"; return; }
+            if (stepIdx >= steps.length) resetState();
+            document.getElementById("playBtn").textContent = "⏸ Pause";
+            schedulePlay();
+        }
+
+        function schedulePlay() {
+            const speed = parseInt(document.getElementById("speedSlider").value);
+            const delay = Math.round(800 / speed);
+            playTimer = setInterval(() => {
+                if (stepIdx >= steps.length) { clearInterval(playTimer); playTimer = null; document.getElementById("playBtn").textContent = "▶ Play"; return; }
+                goNext();
+            }, delay);
+        }
+
+        // ── UI builders ────────────────────────────────────────────
+        function buildAlgoTabs() {
+            const container = document.getElementById("algoTabs");
+            container.innerHTML = Object.entries(ALGOS).map(([k, v]) =>
+                `<button class="algo-tab${k === currentAlgo ? " active" : ""}" data-algo="${k}"><span>${v.name}</span></button>`
+            ).join("");
+            container.querySelectorAll(".algo-tab").forEach(btn => {
+                btn.addEventListener("click", () => { currentAlgo = btn.dataset.algo; buildAlgoTabs(); buildComplexity(); resetState(); });
+            });
+        }
+
+        function buildComplexity() {
+            const a = ALGOS[currentAlgo];
+            document.getElementById("algoLabel").textContent = a.name;
+            document.getElementById("complexityGrid").innerHTML = [
+                { label: "Best case", val: a.best, w: a.bestW, color: "linear-gradient(135deg,#80e8b4,#1daa6a)" },
+                { label: "Average case", val: a.avg, w: a.avgW, color: "linear-gradient(135deg,#ffe082,#ffb300)" },
+                { label: "Worst case", val: a.worst, w: a.worstW, color: "linear-gradient(135deg,#ff8a9b,#e0375a)" },
+                { label: "Space", val: a.space, w: 20, color: "linear-gradient(135deg,#c9a0f8,#8b40e0)" },
+            ].map(it => `
+    <div class="c-card">
+      <div class="c-label">${it.label}</div>
+      <div class="c-val">${it.val}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${it.w}%;background:${it.color}"></div></div>
+    </div>`).join("");
+        }
+
+        // ── Events ─────────────────────────────────────────────────
+        document.getElementById("themeBtn").addEventListener("click", toggleTheme);
+        document.getElementById("genBtn").addEventListener("click", genArr);
+        document.getElementById("applyBtn").addEventListener("click", applyCustomArray);
+        document.getElementById("nextBtn").addEventListener("click", goNext);
+        document.getElementById("prevBtn").addEventListener("click", goPrev);
+        document.getElementById("playBtn").addEventListener("click", togglePlay);
+        document.getElementById("resetBtn").addEventListener("click", resetState);
+        document.getElementById("customInput").addEventListener("keydown", e => { if (e.key === "Enter") applyCustomArray(); });
+        document.getElementById("speedSlider").addEventListener("input", function () {
+            document.getElementById("speedLabel").textContent = this.value + "×";
+            if (playTimer) { clearInterval(playTimer); playTimer = null; schedulePlay(); }
+        });
+
+        buildAlgoTabs(); buildComplexity(); genArr();
+    </script>
+</body>
+
+</html>
